@@ -4,7 +4,7 @@ use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 mod errors;
 use errors::SwitchedError;
 
-declare_id!("2nRFUpSks6sq5Tbku9FPivk2VruxJTG6e6K4H33NFaar");
+declare_id!("68SNbqCu7s3PUN3oj5nHdwNyHL8b9wSQZo9NTTWaoWXr");
 
 #[program]
 pub mod switched_fun {
