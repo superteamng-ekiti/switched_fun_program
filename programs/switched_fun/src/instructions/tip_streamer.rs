@@ -7,7 +7,7 @@ use anchor_spl::{
 use crate::state::{GlobalState, Streamer};
 
 #[derive(Accounts)]
-#[instruction(streamer_account: Pubkey)]
+#[instruction(params: TipParams)]
 pub struct TipStreamer<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -22,7 +22,7 @@ pub struct TipStreamer<'info> {
     #[account(
         mut,
        constraint =  streamer_ata.mint == global_state.supported_tokens_mint.key(),
-       constraint = streamer_ata.owner == streamer_state.user_wallet.key(),
+       constraint = streamer_ata.owner == streamer_state.key(),
        constraint = streamer_ata.key() == streamer_state.user_token_account.key()
     )]
     pub streamer_ata: InterfaceAccount<'info, TokenAccount>,
@@ -33,7 +33,7 @@ pub struct TipStreamer<'info> {
     pub token_mint: InterfaceAccount<'info, Mint>,
 
     #[account(
-        seeds = [b"user", signer.key().as_ref()],
+        seeds = [b"user", params.streamer_account.key().as_ref()],
         bump
     )]
     pub streamer_state: Account<'info, Streamer>,
@@ -69,4 +69,5 @@ impl<'info> TipStreamer<'info> {
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct TipParams {
     pub amount: u64,
+    pub streamer_account: Pubkey,
 }

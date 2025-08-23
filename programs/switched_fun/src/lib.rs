@@ -30,4 +30,15 @@ pub mod switched_fun {
     pub fn withdraw(ctx: Context<Withdraw>, params: WithdrawParams) -> Result<()> {
         ctx.accounts.handle_withdraw(params)
     }
+
+    pub fn admin_withdraw_fees(
+        ctx: Context<AdminWithdrawal>,
+        params: AdminWithdrawParams,
+    ) -> Result<()> {
+        ctx.accounts.handle_admin_fee_withdraw(params)
+    }
+
+    pub fn admin_withdraw_fees_all(ctx: Context<AdminWithdrawal>) -> Result<()> {
+        ctx.accounts.handle_withdraw_all()
+    }
 }
