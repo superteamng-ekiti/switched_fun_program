@@ -6,7 +6,7 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-switched_fun = "2nRFUpSks6sq5Tbku9FPivk2VruxJTG6e6K4H33NFaar"
+switched_fun = "swinS25mqCw6ExEAtLJFxp6HYcqMvoYxKz3by6FfbRD"
 
 [registry]
 url = "https://api.apr.dev"
