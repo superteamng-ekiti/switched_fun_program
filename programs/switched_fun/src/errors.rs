@@ -7,14 +7,10 @@ pub enum SwitchedError {
     #[msg("The project is not initialized.")]
     NotInitialized,
     #[msg("Not your Turn")]
-    NotTurn,
-    #[msg("The task is not completed.")]
-    TaskNotCompleted,
-    #[msg("The caller is not a participant.")]
-    NotAParticipant,
-    #[msg("Unauthorized access.")]
+    WrongOwner,
+    #[msg("Unauthorized access, cannot withdraw on user's behalf")]
     Unauthorized,
-    #[msg("Invalid Parameter Treasury.")]
+    #[msg("Invalid Treasury Account")]
     TreasuryError,
     #[msg("Invalid Parameter percentage bps.")]
     BasePointError,
@@ -22,4 +18,12 @@ pub enum SwitchedError {
     InvalidAmount,
     #[msg("Insufficient Vault Amount")]
     InsufficientVaultBalance,
+    #[msg("Token Decimal should be 6")]
+    InvalidMint,
+    #[msg("You provided a wrong mint Address")]
+    InvalidMintAddress,
+    #[msg("Multiplication overflow")]
+    MultiplicationOverflow,
+    #[msg("Division overflow")]
+    DivisionOverflow,
 }
