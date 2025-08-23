@@ -601,8 +601,8 @@ export type SwitchedFun = {
                 ]
               },
               {
-                "kind": "account",
-                "path": "signer"
+                "kind": "arg",
+                "path": "params.streamer_account"
               }
             ]
           }
@@ -1069,6 +1069,10 @@ export type SwitchedFun = {
           {
             "name": "amount",
             "type": "u64"
+          },
+          {
+            "name": "streamerAccount",
+            "type": "pubkey"
           }
         ]
       }
