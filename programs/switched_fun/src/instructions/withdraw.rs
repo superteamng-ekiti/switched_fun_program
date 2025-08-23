@@ -63,10 +63,8 @@ impl<'info> Withdraw<'info> {
 
     pub fn handle_withdraw(&mut self, params: WithdrawParams) -> Result<()> {
           // make sure user is withdrawing appropriate amount
-
           let user_token_balance = self.streamer_ata.amount;
           let tx_fee_in_usdc = params.gas_in_usdc;
-
 
         // platform_fee = amount/10000 * platform_fee_bps
 
@@ -110,12 +108,12 @@ impl<'info> Withdraw<'info> {
 
          let tx_to_treasury_cpi = CpiContext::new_with_signer(self.token_program.to_account_info(), tx_to_treasury_accounts, signer_seeds);
 
-    // send tx
-    transfer_checked(tx_to_treasury_cpi, total_amount_platform_receives, self.token_mint.decimals)?;
+        // send tx
+        transfer_checked(tx_to_treasury_cpi, total_amount_platform_receives, self.token_mint.decimals)?;
 
-    transfer_checked(tx_to_user_cpi, amount_user_receives, self.token_mint.decimals)?;
+        transfer_checked(tx_to_user_cpi, amount_user_receives, self.token_mint.decimals)?;
 
-    Ok(())
+        Ok(())
     }
 }
 
