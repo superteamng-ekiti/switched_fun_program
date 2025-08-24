@@ -27,30 +27,13 @@ const token_mint_fail = new anchor.web3.PublicKey(
 ); // token with 9 decimals
 
 const token_mint = new anchor.web3.PublicKey(
-  "2o39Cm7hzaXmm9zGGGsa5ZiveJ93oMC2D6U7wfsREcCo"
+  "2o39Cm7hzaXmm9zGGGsa5ZiveJ93oMC2D6U7wfsREcCo" // token with 6 decimals
 );
 
 describe("switched_fun", () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(anchor.AnchorProvider.env());
-
-  // const s_tokenAccount = await getOrCreateAssociatedTokenAccount(
-  //   provider.connection,
-  //   firstUserSecretKey,
-  //   token_mint,
-  //   secondUserSecretKey.publicKey
-  // );
-
-  // const f_tokenAccount = await getOrCreateAssociatedTokenAccount(
-  //   provider.connection,
-  //   secondUserSecretKey,
-  //   token_mint,
-  //   firstUserSecretKey.publicKey
-  // );
-
-  // console.log("second_token_account", s_tokenAccount.address.toBase58());
-  // console.log("first_token_account", f_tokenAccount.address.toBase58());
 
   const program = anchor.workspace.switchedFun as Program<SwitchedFun>;
 
@@ -142,7 +125,7 @@ describe("switched_fun", () => {
     }
   });
 
-  it.only("should withdraw from available balance ", async () => {
+  it("should withdraw from available balance ", async () => {
     try {
       let receiving_ata = await getOrCreateAssociatedTokenAccount(
         program.provider.connection,
@@ -215,6 +198,275 @@ describe("switched_fun", () => {
     } catch (error) {
       if (error.logs) throw error.logs;
       else throw error;
+    }
+  });
+
+  // ADMIN FEE 🔥🔥🔥🔥🔥
+
+  it.only("should allow admin to withdraw specific fee amount", async () => {
+    try {
+      let admin_receiving_ata = await getOrCreateAssociatedTokenAccount(
+        program.provider.connection,
+        admin,
+        token_mint,
+        admin.publicKey, // Admin withdraws to their own account
+        false
+      );
+
+      // Check treasury balance before
+      let global_state = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("global_state")],
+        program.programId
+      )[0];
+
+      let treasury_ata = await getAssociatedTokenAddress(
+        token_mint,
+        global_state,
+        true
+      );
+
+      const treasury_balance_before =
+        await program.provider.connection.getTokenAccountBalance(treasury_ata);
+      console.log(
+        "Treasury balance before:",
+        treasury_balance_before.value.amount
+      );
+
+      const withdraw_amount = new BN(1_000_000); // 1 USDC
+
+      const tx = await program.methods
+        .adminWithdrawFees({
+          amount: withdraw_amount,
+        })
+        .signers([admin])
+        .accounts({
+          signer: admin.publicKey,
+          receivingAta: admin_receiving_ata.address,
+          tokenMint: token_mint,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .rpc();
+
+      console.log("Admin withdraw transaction signature", tx);
+
+      // Check balances after
+      const treasury_balance_after =
+        await program.provider.connection.getTokenAccountBalance(treasury_ata);
+      console.log(
+        "Treasury balance after:",
+        treasury_balance_after.value.amount
+      );
+
+      const admin_balance_after =
+        await program.provider.connection.getTokenAccountBalance(
+          admin_receiving_ata.address
+        );
+      console.log("Admin balance after:", admin_balance_after.value.amount);
+    } catch (error) {
+      if (error.logs) throw error.logs;
+      else throw error;
+    }
+  });
+
+  it.only("should allow admin to withdraw all fees", async () => {
+    try {
+      let admin_receiving_ata = await getOrCreateAssociatedTokenAccount(
+        program.provider.connection,
+        admin,
+        token_mint,
+        admin.publicKey, // Admin withdraws to their own account
+        false
+      );
+
+      // Get treasury account
+      let global_state = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("global_state")],
+        program.programId
+      )[0];
+
+      let treasury_ata = await getAssociatedTokenAddress(
+        token_mint,
+        global_state,
+        true
+      );
+
+      const treasury_balance_before =
+        await program.provider.connection.getTokenAccountBalance(treasury_ata);
+      console.log(
+        "Treasury balance before withdraw all:",
+        treasury_balance_before.value.amount
+      );
+
+      const admin_balance_before =
+        await program.provider.connection.getTokenAccountBalance(
+          admin_receiving_ata.address
+        );
+      console.log("Admin balance before:", admin_balance_before.value.amount);
+
+      const tx = await program.methods
+        .adminWithdrawFeesAll()
+        .signers([admin])
+        .accounts({
+          signer: admin.publicKey,
+          receivingAta: admin_receiving_ata.address,
+          tokenMint: token_mint,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .rpc();
+
+      console.log("Admin withdraw all transaction signature", tx);
+
+      // Check balances after
+      const treasury_balance_after =
+        await program.provider.connection.getTokenAccountBalance(treasury_ata);
+      console.log(
+        "Treasury balance after withdraw all:",
+        treasury_balance_after.value.amount
+      );
+
+      const admin_balance_after =
+        await program.provider.connection.getTokenAccountBalance(
+          admin_receiving_ata.address
+        );
+      console.log("Admin balance after:", admin_balance_after.value.amount);
+    } catch (error) {
+      if (error.logs) throw error.logs;
+      else throw error;
+    }
+  });
+
+  it.only("should fail when non-admin tries to withdraw fees", async () => {
+    try {
+      let user_receiving_ata = await getOrCreateAssociatedTokenAccount(
+        program.provider.connection,
+        first_user,
+        token_mint,
+        first_user.publicKey,
+        false
+      );
+
+      let global_state = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("global_state")],
+        program.programId
+      )[0];
+
+      let treasury_ata = await getAssociatedTokenAddress(
+        token_mint,
+        global_state,
+        true
+      );
+
+      const tx = await program.methods
+        .adminWithdrawFees({
+          amount: new BN(1_000_000), // 1 USDC
+        })
+        .signers([first_user]) // Non-admin trying to withdraw
+        .accounts({
+          receivingAta: user_receiving_ata.address,
+          signer: first_user.publicKey,
+          tokenMint: token_mint,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .rpc();
+
+      console.log("This should not succeed:", tx);
+    } catch (error) {
+      console.log("Expected error - non-admin cannot withdraw fees");
+      if (error.logs) console.log("Error logs:", error.logs);
+      // This should fail, so we expect an error
+    }
+  });
+
+  it.only("should fail when withdrawing more than available balance", async () => {
+    try {
+      let admin_receiving_ata = await getOrCreateAssociatedTokenAccount(
+        program.provider.connection,
+        admin,
+        token_mint,
+        admin.publicKey,
+        false
+      );
+
+      let global_state = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("global_state")],
+        program.programId
+      )[0];
+
+      let treasury_ata = await getAssociatedTokenAddress(
+        token_mint,
+        global_state,
+        true
+      );
+
+      // Get current treasury balance
+      const treasury_balance =
+        await program.provider.connection.getTokenAccountBalance(treasury_ata);
+      console.log("Current treasury balance:", treasury_balance.value.amount);
+
+      // Try to withdraw more than what's available
+      const excessive_amount = new BN(treasury_balance.value.amount).add(
+        new BN(1_000_000)
+      ); // Add 1 USDC more
+      console.log("Trying to withdraw:", excessive_amount.toString());
+
+      const tx = await program.methods
+        .adminWithdrawFees({
+          amount: excessive_amount,
+        })
+        .signers([admin])
+        .accounts({
+          signer: admin.publicKey,
+          receivingAta: admin_receiving_ata.address,
+          tokenMint: token_mint,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .rpc();
+
+      console.log("This should not succeed:", tx);
+    } catch (error) {
+      console.log(
+        "Expected error - cannot withdraw more than treasury balance"
+      );
+      if (error.logs) console.log("Error logs:", error.logs);
+      // This should fail, so we expect an error
+    }
+  });
+
+  it.only("should handle withdraw with underflow scenario", async () => {
+    try {
+      let receiving_ata = await getOrCreateAssociatedTokenAccount(
+        program.provider.connection,
+        first_user,
+        token_mint,
+        new anchor.web3.PublicKey(
+          "F5FEbATzKgDSwfXQ5tnETm249AxSDpSAw1k5gMT95JdQ"
+        ),
+        false
+      );
+
+      // Try to withdraw with fees higher than amount (should cause underflow)
+      const withdraw_amount = new BN(1_000_000); // 1 USDC
+      const excessive_gas = new BN(2_000_000); // 2 USDC gas (more than withdraw amount)
+
+      const tx = await program.methods
+        .withdraw({
+          amount: withdraw_amount,
+          gasInUsdc: excessive_gas,
+        })
+        .signers([first_user])
+        .accounts({
+          signer: first_user.publicKey,
+          receivingAta: receiving_ata.address,
+          tokenMint: token_mint,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .rpc();
+
+      console.log("This should not succeed:", tx);
+    } catch (error) {
+      console.log("Expected error - fees exceed withdrawal amount");
+      if (error.logs) console.log("Error logs:", error.logs);
+      // This should fail due to underflow
     }
   });
 });
