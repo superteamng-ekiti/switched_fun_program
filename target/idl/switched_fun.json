@@ -275,6 +275,11 @@
           "signer": true
         },
         {
+          "name": "broadcaster",
+          "writable": true,
+          "signer": true
+        },
+        {
           "name": "streamer_state",
           "writable": true,
           "pda": {

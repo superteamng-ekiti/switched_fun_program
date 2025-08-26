@@ -12,9 +12,12 @@ pub struct CreateStreamer<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
+    #[account(mut)]
+    pub broadcaster: Signer<'info>,
+
     #[account(
         init,
-        payer = signer,
+        payer = broadcaster,
         space = Streamer::DISCRIMINATOR.len() + Streamer::INIT_SPACE,
         seeds = [b"user", signer.key().as_ref()],
         bump
@@ -28,7 +31,7 @@ pub struct CreateStreamer<'info> {
 
     #[account(
         init,
-        payer = signer,
+        payer = broadcaster,
         associated_token::mint = token_mint,
         associated_token::authority = streamer_state,
     )]
