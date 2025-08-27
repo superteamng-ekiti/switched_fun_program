@@ -281,6 +281,11 @@ export type SwitchedFun = {
           "signer": true
         },
         {
+          "name": "broadcaster",
+          "writable": true,
+          "signer": true
+        },
+        {
           "name": "streamerState",
           "writable": true,
           "pda": {

@@ -10,6 +10,7 @@ import { publicKey } from "@coral-xyz/anchor/dist/cjs/utils";
 
 import first_user_file from "./accounts/first_user.json";
 import second_user_file from "./accounts/second_user.json";
+import third_user_file from "./accounts/third_user.json";
 import admin_file from "./accounts/treasury.json";
 import { TOKEN_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/utils/token";
 import { BN } from "bn.js";
@@ -19,6 +20,9 @@ const first_user = anchor.web3.Keypair.fromSecretKey(
 );
 const second_user = anchor.web3.Keypair.fromSecretKey(
   new Uint8Array(second_user_file)
+);
+const third_user = anchor.web3.Keypair.fromSecretKey(
+  new Uint8Array(third_user_file)
 );
 const admin = anchor.web3.Keypair.fromSecretKey(new Uint8Array(admin_file));
 
@@ -67,11 +71,12 @@ describe("switched_fun", () => {
     try {
       const tx = await program.methods
         .createStreamer()
-        .signers([first_user])
+        .signers([third_user, admin])
         .accounts({
-          signer: first_user.publicKey,
+          signer: third_user.publicKey,
           tokenMint: token_mint,
           tokenProgram: TOKEN_PROGRAM_ID,
+          broadcaster: admin.publicKey,
         })
         .rpc();
       console.log("Your transaction signature", tx);
@@ -81,10 +86,10 @@ describe("switched_fun", () => {
     }
   });
 
-  it("should tip a user ", async () => {
+  it.only("should tip a user ", async () => {
     try {
       let streamer_state = anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from("user"), first_user.publicKey.toBuffer()],
+        [Buffer.from("user"), third_user.publicKey.toBuffer()],
         program.programId
       )[0];
 
@@ -107,7 +112,7 @@ describe("switched_fun", () => {
       const tx = await program.methods
         .tipUser({
           amount: new BN(110_000_000), // 110 with 6 decimals
-          streamerAccount: first_user.publicKey,
+          streamerAccount: third_user.publicKey,
         })
         .signers([second_user])
         .accounts({
@@ -203,7 +208,7 @@ describe("switched_fun", () => {
 
   // ADMIN FEE 🔥🔥🔥🔥🔥
 
-  it.only("should allow admin to withdraw specific fee amount", async () => {
+  it("should allow admin to withdraw specific fee amount", async () => {
     try {
       let admin_receiving_ata = await getOrCreateAssociatedTokenAccount(
         program.provider.connection,
@@ -268,7 +273,7 @@ describe("switched_fun", () => {
     }
   });
 
-  it.only("should allow admin to withdraw all fees", async () => {
+  it("should allow admin to withdraw all fees", async () => {
     try {
       let admin_receiving_ata = await getOrCreateAssociatedTokenAccount(
         program.provider.connection,
@@ -335,7 +340,7 @@ describe("switched_fun", () => {
     }
   });
 
-  it.only("should fail when non-admin tries to withdraw fees", async () => {
+  it("should fail when non-admin tries to withdraw fees", async () => {
     try {
       let user_receiving_ata = await getOrCreateAssociatedTokenAccount(
         program.provider.connection,
@@ -377,7 +382,7 @@ describe("switched_fun", () => {
     }
   });
 
-  it.only("should fail when withdrawing more than available balance", async () => {
+  it("should fail when withdrawing more than available balance", async () => {
     try {
       let admin_receiving_ata = await getOrCreateAssociatedTokenAccount(
         program.provider.connection,
@@ -432,7 +437,7 @@ describe("switched_fun", () => {
     }
   });
 
-  it.only("should handle withdraw with underflow scenario", async () => {
+  it("should handle withdraw with underflow scenario", async () => {
     try {
       let receiving_ata = await getOrCreateAssociatedTokenAccount(
         program.provider.connection,

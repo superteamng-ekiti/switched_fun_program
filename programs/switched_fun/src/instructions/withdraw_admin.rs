@@ -11,6 +11,7 @@ pub struct AdminWithdrawal<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
+
     #[account(
         seeds = [b"global_state"],
         bump = global_state.bump
