@@ -16,7 +16,7 @@ pub struct CreateStreamer<'info> {
     pub broadcaster: Signer<'info>,
 
     #[account(
-        init,
+        init_if_needed,
         payer = broadcaster,
         space = Streamer::DISCRIMINATOR.len() + Streamer::INIT_SPACE,
         seeds = [b"user", signer.key().as_ref()],
@@ -30,7 +30,7 @@ pub struct CreateStreamer<'info> {
     pub token_mint: InterfaceAccount<'info, Mint>,
 
     #[account(
-        init,
+        init_if_needed,
         payer = broadcaster,
         associated_token::mint = token_mint,
         associated_token::authority = streamer_state,

@@ -86,7 +86,7 @@ describe("switched_fun", () => {
     }
   });
 
-  it.only("should tip a user ", async () => {
+  it("should tip a user ", async () => {
     try {
       let streamer_state = anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from("user"), third_user.publicKey.toBuffer()],
@@ -130,14 +130,14 @@ describe("switched_fun", () => {
     }
   });
 
-  it("should withdraw from available balance ", async () => {
+  it.only("should withdraw from available balance ", async () => {
     try {
       let receiving_ata = await getOrCreateAssociatedTokenAccount(
         program.provider.connection,
         first_user,
         token_mint,
         new anchor.web3.PublicKey(
-          "F5FEbATzKgDSwfXQ5tnETm249AxSDpSAw1k5gMT95JdQ" // wallet address to withdraw usdc to
+          "9JDdvLdA8S8qQ6fSu2De5fyfEEQDuAJscxbxBbhZoAF7" // wallet address to withdraw usdc to
         ),
         false
       );
